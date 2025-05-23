@@ -57,13 +57,13 @@
 <body>
     <h1>Grade Predictor</h1>
     <form id="gradeForm">
-        <label>Major 1 (0-60):</label><input type="number" id="major1" max="60" min="0" required>
-        <label>Major 2 (0-60):</label><input type="number" id="major2" max="60" min="0" required>
-        <label>Final Exam (0-100):</label><input type="number" id="final" max="100" min="0" required>
-        <label>Lab Work (0-100):</label><input type="number" id="lab" max="100" min="0" required>
-        <label>Quizzes (0-60):</label><input type="number" id="quiz" max="60" min="0" required>
-        <label>Homework (0-10):</label><input type="number" id="homework" max="10" min="0" required>
-        <label>Attendance (0-10):</label><input type="number" id="attendance" max="10" min="0" required>
+        <label>Major 1 (0-60):</label><input type="number" step="0.01" id="major1" required>
+        <label>Major 2 (0-60):</label><input type="number" step="0.01" id="major2" required>
+        <label>Final Exam (0-100):</label><input type="number" step="0.01" id="final" required>
+        <label>Lab Work (0-100):</label><input type="number" step="0.01" id="lab" required>
+        <label>Quizzes (0-60):</label><input type="number" step="0.01" id="quiz" required>
+        <label>Homework (0-10):</label><input type="number" step="0.01" id="homework" required>
+        <label>Attendance (0-10):</label><input type="number" step="0.01" id="attendance" required>
         <button type="submit">Predict Grade</button>
     </form>
     <div id="results"></div>
@@ -77,13 +77,13 @@
             e.preventDefault();
 
             const scores = {
-                major1: parseInt(document.getElementById('major1').value),
-                major2: parseInt(document.getElementById('major2').value),
-                final: parseInt(document.getElementById('final').value),
-                lab: parseInt(document.getElementById('lab').value),
-                quiz: parseInt(document.getElementById('quiz').value),
-                homework: parseInt(document.getElementById('homework').value),
-                attendance: parseInt(document.getElementById('attendance').value)
+                major1: parseFloat(document.getElementById('major1').value.replace(',', '.')),
+                major2: parseFloat(document.getElementById('major2').value.replace(',', '.')),
+                final: parseFloat(document.getElementById('final').value.replace(',', '.')),
+                lab: parseFloat(document.getElementById('lab').value.replace(',', '.')),
+                quiz: parseFloat(document.getElementById('quiz').value.replace(',', '.')),
+                homework: parseFloat(document.getElementById('homework').value.replace(',', '.')),
+                attendance: parseFloat(document.getElementById('attendance').value.replace(',', '.'))
             };
 
             const total = scores.major1 + scores.major2 + scores.final + scores.lab + scores.quiz + scores.homework + scores.attendance;
