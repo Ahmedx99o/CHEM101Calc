@@ -1,0 +1,112 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Grade Predictor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>Grade Predictor</h1>
+    <form id="gradeForm">
+        <label>Major 1 (0-60):</label><input type="number" id="major1" max="60" min="0" required>
+        <label>Major 2 (0-60):</label><input type="number" id="major2" max="60" min="0" required>
+        <label>Final Exam (0-100):</label><input type="number" id="final" max="100" min="0" required>
+        <label>Lab Work (0-100):</label><input type="number" id="lab" max="100" min="0" required>
+        <label>Quizzes (0-60):</label><input type="number" id="quiz" max="60" min="0" required>
+        <label>Homework (0-10):</label><input type="number" id="homework" max="10" min="0" required>
+        <label>Attendance (0-10):</label><input type="number" id="attendance" max="10" min="0" required>
+        <button type="submit">Predict Grade</button>
+    </form>
+    <div id="results"></div>
+
+    <script>
+        document.getElementById('gradeForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const scores = {
+                major1: parseInt(document.getElementById('major1').value),
+                major2: parseInt(document.getElementById('major2').value),
+                final: parseInt(document.getElementById('final').value),
+                lab: parseInt(document.getElementById('lab').value),
+                quiz: parseInt(document.getElementById('quiz').value),
+                homework: parseInt(document.getElementById('homework').value),
+                attendance: parseInt(document.getElementById('attendance').value)
+            };
+
+            const total = scores.major1 + scores.major2 + scores.final + scores.lab + scores.quiz + scores.homework + scores.attendance;
+
+            const termData = {
+                "Term 241": [338, 302, 279, 255, 231, 217, 197, 182, 0],
+                "Term 233": [341, 320, 307, 286, 255, 242, 222, 0],
+                "Term 232": [336, 306, 281, 262, 242, 227, 184, 0],
+                "Term 231": [337, 306, 284, 262, 240, 226, 198, 176, 0],
+                "Term 223": [342, 322, 302, 284, 267, -1, -1, 193, 0],
+                "Term 222": [341, 322, 303, 283, 269, 249, 226, 180, 0]
+            };
+
+            const grades = ["A+", "A", "B+", "B", "C+", "C", "D+", "D", "F"];
+
+            let results = `<h2>Total Points: ${total}</h2>`;
+            for (let term in termData) {
+                const thresholds = termData[term];
+                let grade = "F", nextDiff = 0;
+                for (let i = 0; i < thresholds.length; i++) {
+                    if (total >= thresholds[i]) {
+                        grade = grades[i];
+                        nextDiff = i > 0 ? thresholds[i - 1] - total : 0;
+                        break;
+                    }
+                }
+                results += `<p><strong>${term}</strong>: Grade is <strong>${grade}</strong>. Points to next grade: ${nextDiff}</p>`;
+            }
+
+            document.getElementById('results').innerHTML = results;
+        });
+    </script>
+</body>
+</html>
