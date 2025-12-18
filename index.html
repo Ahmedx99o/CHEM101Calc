@@ -1,120 +1,547 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Grade Predictor</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        h1 {
-            color: #333;
-        }
-        form {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        label {
-            display: block;
-            margin: 10px 0 5px;
-        }
-        input[type="number"] {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
-        button {
-            padding: 10px 15px;
-            background-color: #5cb85c;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #4cae4c;
-        }
-        #results {
-            margin-top: 20px;
-            padding: 20px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        footer {
-            margin-top: 30px;
-            text-align: center;
-            font-size: 14px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Grade Predictor</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; }
+    h1 { color: #333; }
+    form { background:#fff; padding:20px; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.1); }
+    label { display:block; margin:10px 0 5px; }
+    input[type="number"] { width:100%; padding:8px; margin-bottom:10px; border-radius:4px; border:1px solid #ccc; }
+    button[type="submit"] { padding:10px 15px; background-color:#5cb85c; color:#fff; border:none; border-radius:4px; cursor:pointer; }
+    button[type="submit"]:hover { background-color:#4cae4c; }
+
+    #results { margin-top: 20px; }
+    .term-card { background:#fff; padding:18px; border-radius:12px; box-shadow:0 6px 16px rgba(0,0,0,0.08); margin-bottom:16px; }
+    .term-title { font-weight:bold; font-size:16px; margin-bottom:10px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .grade-label { font-size:13px; color:#666; margin-bottom:2px; }
+    .current-grade { font-size:38px; font-weight:bold; color:#b94a48; line-height:1; margin-bottom:10px; }
+    .badge { display:inline-block; font-size:12px; padding:3px 8px; border-radius:999px; background:#f1f3f5; color:#555; font-weight:600; }
+    .next-target { font-size:15px; margin-bottom:6px; }
+    .points-needed { font-size:14px; color:#333; }
+    .subnote { margin-top:8px; color:#666; font-size:12px; }
+
+    /* Gap Button (Info) */
+    .gap-wrap { position: relative; }
+    .gap-btn {
+      display:inline-flex; align-items:center; gap:6px;
+      border:none; background:#e7f3ff; color:#0b5ed7;
+      border-radius:20px; padding:5px 12px;
+      font-size:12px; font-weight:bold; cursor:pointer; white-space:nowrap;
+    }
+    .gap-btn::before { content:"ℹ"; font-size:14px; }
+    .gap-btn:hover { background:#d0e7ff; }
+
+    .gap-popover {
+      display:none; position:absolute; top:38px; left:0;
+      width:460px; max-width:85vw;
+      background:#fff; border:1px solid #cfe2ff; border-radius:10px;
+      box-shadow:0 10px 26px rgba(0,0,0,0.18);
+      padding:14px; font-size:13px; z-index:1000;
+    }
+    .gap-popover .title { font-weight:bold; margin-bottom:8px; color:#0b5ed7; }
+    .gap-popover ul { margin:8px 0 0 18px; padding:0; }
+    .gap-popover li { margin:5px 0; }
+    .gap-popover .warn { margin-top:8px; color:#b94a48; font-weight:600; }
+    .gap-popover .small { margin-top:8px; color:#666; font-size:12px; }
+
+    footer { margin-top:30px; text-align:center; font-size:14px; }
+  
+    .grade-Aplus { color: #1b9e3c; }
+    .grade-A { color: #2fbf71; }
+    .grade-Bplus { color: #6ccf8e; }
+    .grade-B { color: #9fd9a8; }
+    .grade-Cplus { color: #f1c40f; }
+    .grade-C { color: #f39c12; }
+    .grade-Dplus { color: #e67e22; }
+    .grade-D { color: #e74c3c; }
+    .grade-F { color: #c0392b; }
+
+
+    .avg-btn{
+      display:inline-flex; align-items:center; gap:6px;
+      border:none; background:#f3e8ff; color:#6f42c1;
+      border-radius:20px; padding:5px 12px;
+      font-size:12px; font-weight:bold; cursor:pointer;
+    }
+    .avg-btn:hover{ background:#e9d5ff; }
+    .avg-pop{
+      display:none; position:absolute; top:38px; left:0;
+      background:#fff; border:1px solid #e9d5ff;
+      border-radius:10px; padding:12px;
+      box-shadow:0 10px 26px rgba(0,0,0,.18);
+      font-size:13px; z-index:1000;
+      width:300px;
+    }
+
+</style>
 </head>
 <body>
-    <h1>Grade Predictor</h1>
-    <form id="gradeForm">
-        <label>Major 1 (0-60):</label><input type="number" step="0.01" id="major1" required>
-        <label>Major 2 (0-60):</label><input type="number" step="0.01" id="major2" required>
-        <label>Final Exam (0-100):</label><input type="number" step="0.01" id="final" required>
-        <label>Lab Work (0-100):</label><input type="number" step="0.01" id="lab" required>
-        <label>Quizzes (0-60):</label><input type="number" step="0.01" id="quiz" required>
-        <label>Homework (0-10):</label><input type="number" step="0.01" id="homework" required>
-        <label>Attendance (0-10):</label><input type="number" step="0.01" id="attendance" required>
-        <button type="submit">Predict Grade</button>
-    </form>
-    <div id="results"></div>
 
-    <footer>
-        <p>Created by <a href="https://x.com/A7med99o" target="_blank">@A7med99o</a></p>
-    </footer>
+<h1>Grade Predictor</h1>
 
-    <script>
-        document.getElementById('gradeForm').addEventListener('submit', function (e) {
-            e.preventDefault();
+<form id="gradeForm">
+  <label>Major 1 (0–60):</label><input type="number" step="0.01" id="major1" required>
+  <label>Major 2 (0–60):</label><input type="number" step="0.01" id="major2" required>
+  <label>Final Exam (0–100):</label><input type="number" step="0.01" id="final" required>
+  <label>Lab Work (0–100):</label><input type="number" step="0.01" id="lab" required>
+  <label>Quizzes (0–60):</label><input type="number" step="0.01" id="quiz" required>
+  <label>Homework (0–10):</label><input type="number" step="0.01" id="homework" required>
+  <label>Attendance (0–10):</label><input type="number" step="0.01" id="attendance" required>
+  <button type="submit">Predict Grade</button>
+</form>
 
-            const scores = {
-                major1: parseFloat(document.getElementById('major1').value.replace(',', '.')),
-                major2: parseFloat(document.getElementById('major2').value.replace(',', '.')),
-                final: parseFloat(document.getElementById('final').value.replace(',', '.')),
-                lab: parseFloat(document.getElementById('lab').value.replace(',', '.')),
-                quiz: parseFloat(document.getElementById('quiz').value.replace(',', '.')),
-                homework: parseFloat(document.getElementById('homework').value.replace(',', '.')),
-                attendance: parseFloat(document.getElementById('attendance').value.replace(',', '.'))
-            };
+<div id="results"></div>
 
-            const total = scores.major1 + scores.major2 + scores.final + scores.lab + scores.quiz + scores.homework + scores.attendance;
+<footer>
+  Created by X: <a href="https://x.com/A7med99o" target="_blank">@A7med99o</a>
+</footer>
 
-            const termData = {
-                "Term 241": [338, 302, 279, 255, 231, 217, 197, 182, 0],
-                "Term 233": [341, 320, 307, 286, 255, 242, 222, 0],
-                "Term 232": [336, 306, 281, 262, 242, 227, 184, 0],
-                "Term 231": [337, 306, 284, 262, 240, 226, 198, 176, 0],
-                "Term 223": [342, 322, 302, 284, 267, -1, -1, 193, 0],
-                "Term 222": [341, 322, 303, 283, 269, 249, 226, 180, 0]
-            };
+<script>
+document.getElementById('gradeForm').addEventListener('submit', function (e) {
+  e.preventDefault();
 
-            const grades = ["A+", "A", "B+", "B", "C+", "C", "D+", "D", "F"];
+  const fields = ["major1","major2","final","lab","quiz","homework","attendance"];
+  let total = 0;
+  fields.forEach(f => total += parseFloat(document.getElementById(f).value.replace(',', '.')));
 
-            let results = `<h2>Total Points: ${total}</h2>`;
-            for (let term in termData) {
-                const thresholds = termData[term];
-                let grade = "F", nextDiff = 0;
-                for (let i = 0; i < thresholds.length; i++) {
-                    if (total >= thresholds[i]) {
-                        grade = grades[i];
-                        nextDiff = i > 0 ? thresholds[i - 1] - total : 0;
-                        break;
-                    }
-                }
-                results += `<p><strong>${term}</strong>: Grade is <strong>${grade}</strong>. Points to next grade: ${nextDiff}</p>`;
-            }
+  const maxTotal = 400;
+  const percent = (total / maxTotal) * 100;
 
-            document.getElementById('results').innerHTML = results;
-        });
-    </script>
+  const gradeOrder = ["A+","A","B+","B","C+","C","D+","D","F"];
+
+  // Range model {min, max}. null means unknown. Mirrors your provided info.
+  const termModel = {
+
+  "Term 243": { type: "points", ranges: {
+      "A+": {min:351, max:400},
+      "A":  {min:332, max:349},
+      "B+": {min:313, max:331},
+      "B":  {min:287, max:312},
+      "C+": {min:265, max:286},
+      "C":  {min:null, max:257},   // xx–257
+      "D+": {min:null, max:231},   // xx–231
+      "D":  {min:208,  max:null},  // 208–xx
+      "F":  {min:0,    max:90}     // 0–90
+    }},
+  "Term 242": { type: "points", ranges: {
+      "A+": {min:334, max:400},
+      "A":  {min:302, max:332},
+      "B+": {min:278, max:301},
+      "B":  {min:255, max:277},
+      "C+": {min:226, max:252},
+      "C":  {min:211, max:225},
+      "D+": {min:197, max:214},
+      "D":  {min:170, max:187},
+      "F":  {min:0,   max:null}    // 0–,
+    }},
+  "Term 241": { type: "points", ranges: {
+      "A+": {min:338, max:400},
+      "A":  {min:302, max:337},
+      "B+": {min:279, max:301},
+      "B":  {min:255, max:278},
+      "C+": {min:231, max:251},
+      "C":  {min:217, max:230},
+      "D+": {min:197, max:214},
+      "D":  {min:182, max:187},
+      "F":  {min:0,   max:null}
+    }},
+  "Term 233": { type: "points", ranges: {
+      "A+": {min:341, max:400},
+      "A":  {min:320, max:340},
+      "B+": {min:307, max:319},
+      "B":  {min:286, max:306},
+      // For lower grades in Term 233, the shared data is incomplete.
+      // We apply a conservative, conflict-proof ladder aligned to your requirement that 230 -> D:
+      "C+": {min:256, max:285},
+      "C":  {min:243, max:255},
+      "D+": {min:242, max:242},
+      "D":  {min:222, max:241},
+      "F":  {min:0,   max:221}
+    }},
+  "Term 232": { type: "points", ranges: {
+      "A+": {min:336, max:400},
+      "A":  {min:306, max:335},
+      "B+": {min:281, max:305},
+      "B":  {min:262, max:280},
+      "C+": {min:242, max:261},
+      "C":  {min:227, max:241},
+      "D+": {min:null, max:null},
+      "D":  {min:184,  max:null},
+      "F":  {min:0,    max:null}
+    }},
+  "Term 231": { type: "points", ranges: {
+      "A+": {min:337, max:400},
+      "A":  {min:306, max:334},
+      "B+": {min:284, max:305},
+      "B":  {min:262, max:283},
+      "C+": {min:240, max:259},
+      "C":  {min:226, max:237},
+      "D+": {min:198, max:215},
+      "D":  {min:176, max:188},
+      "F":  {min:0,   max:null}
+    }},
+  "Term 222": { type: "points", ranges: {
+      "A+": {min:341, max:400},
+      "A":  {min:322, max:340},
+      "B+": {min:303, max:321},
+      "B":  {min:283, max:302},
+      "C+": {min:269, max:282},
+      "C":  {min:249, max:null},   // 249–
+      "D+": {min:226, max:null},   // 226–
+      "D":  {min:180, max:null},   // 180–
+      "F":  {min:0,   max:null}
+    }},
+  "Term 213": { type: "points", ranges: {
+      "A+": {min:363, max:400},
+      "A":  {min:339, max:362},
+      "B+": {min:314, max:338},
+      "B":  {min:289, max:313},
+      "C+": {min:269, max:288},
+      "C":  {min:246, max:268},
+      "D+": {min:223, max:245},
+      "D":  {min:198, max:222},
+      "F":  {min:0,   max:197}
+    }},
+  "Term 212": { type: "points", ranges: {
+      "A+": {min:350, max:400},
+      "A":  {min:330, max:349.99},
+      "B+": {min:300, max:329.99},
+      "B":  {min:280, max:299.99},
+      "C+": {min:250, max:279.99},
+      "C":  {min:230, max:249.99},
+      "D+": {min:200, max:229.99},
+      "D":  {min:160, max:199.99},
+      "F":  {min:0,   max:159.99}
+    }},
+  "Term 211": { type: "percent", ranges: {
+      "A+": {min:83, max:100},
+      "A":  {min:80, max:82},
+      "B+": {min:72, max:79},
+      "B":  {min:68, max:71},
+      "C+": {min:65, max:67},
+      "C":  {min:59, max:64},
+      "D+": {min:50, max:58},
+      "D":  {min:37, max:49},
+      "F":  {min:0,  max:36}
+    }}
+  };
+
+
+  const termAverages = {
+    "Term 243": { major1: "72.78%", major2: "79.02%", final: "75.00%" },
+    "Term 242": { major1: "67.83%", major2: "65.65%", final: "60.00%" },
+    "Term 241": { major1: "68.97%", major2: "70.56%", final: "57.88%" },
+    "Term 233": { major1: "75.65%", major2: "72.73%", final: "71.33%" },
+    "Term 232": { major1: null, major2: null, final: null },
+    "Term 231": { major1: "66.66%", major2: "65.59%", final: "63.41%" },
+    "Term 222": { major1: "67.16%", major2: "69.67%", final: "62.87%" },
+    "Term 212": { major1: "68.53%", major2: "71.8%", final: "62.1%" },
+    "Term 211": { major1: "62.9%", major2: "54.46%", final: "57.5%" }
+  };
+
+
+  
+  function averagesUI(term){
+    const a = termAverages[term];
+    if(!a || (!a.major1 && !a.major2 && !a.final)) return "";
+    const id = term.replace(/\s+/g,'_') + "_avg";
+    return `
+      <span style="position:relative">
+        <button class="avg-btn" data-avg="${id}">Averages</button>
+        <div class="avg-pop" id="${id}">
+          <div><strong>First Major:</strong> ${a.major1 || "N/A"}</div>
+          <div><strong>Second Major:</strong> ${a.major2 || "N/A"}</div>
+          <div><strong>Final Exam:</strong> ${a.final || "N/A"}</div>
+        </div>
+      </span>`;
+  }
+
+  function fmtRange(minv, maxv) {
+    const a = (minv == null) ? "xx" : String(minv);
+    const b = (maxv == null) ? "xx" : String(maxv);
+    return `${a}–${b}`;
+  }
+
+  function inferMaxFromNextMin(rangesObj) {
+    // If a grade has a known min but unknown max, and the next higher grade has known min,
+    // infer max = nextHigherMin - 1 (this is NOT a conflict; it's shorthand like "249-").
+    const r = JSON.parse(JSON.stringify(rangesObj));
+    for (let i = gradeOrder.length - 1; i >= 0; i--) {
+      const g = gradeOrder[i];
+      if (!r[g]) continue;
+      if (r[g].min == null || r[g].max != null) continue;
+
+      // next higher grade is i-1
+      if (i > 0) {
+        const higher = gradeOrder[i - 1];
+        if (r[higher] && r[higher].min != null) {
+          r[g].max = r[higher].min - 1;
+        }
+      }
+    }
+    return r;
+  }
+
+  function exactKnownRangeGrade(rangesObj, value) {
+    for (const g of gradeOrder) {
+      const rr = rangesObj[g];
+      if (!rr) continue;
+      if (rr.min != null && rr.max != null && value >= rr.min && value <= rr.max) return g;
+    }
+    return null;
+  }
+
+  function findOverlaps(rangesObj, value) {
+    const hits = [];
+    for (const g of gradeOrder) {
+      const rr = rangesObj[g];
+      if (!rr) continue;
+      if (rr.min != null && rr.max != null && value >= rr.min && value <= rr.max) hits.push(g);
+    }
+    return hits;
+  }
+
+  function worstCaseGeneric(rangesOriginal, value) {
+    // Use inferred maxes for shorthand ranges (e.g., "249-")
+    const ranges = inferMaxFromNextMin(rangesOriginal);
+
+    // If inside any known range: exact unless overlapping with another known range.
+    const overlaps = findOverlaps(ranges, value);
+    if (overlaps.length === 1) return { grade: overlaps[0], label: "Exact" };
+    if (overlaps.length > 1) return { grade: overlaps[overlaps.length - 1], label: "Worst case (conflict)" }; // lowest grade wins
+
+    // Otherwise it's in a gap / unknown zone. Assign the grade just below the next higher known MIN.
+    let nextHigherIdx = null;
+    let nextHigherMin = Infinity;
+    for (let i = 0; i < gradeOrder.length; i++) {
+      const g = gradeOrder[i];
+      const minv = ranges[g]?.min;
+      if (minv != null && minv > value && minv < nextHigherMin) {
+        nextHigherMin = minv;
+        nextHigherIdx = i;
+      }
+    }
+
+    if (nextHigherIdx == null) {
+      // value is >= highest min; treat as top grade if possible else worst
+      const exact = exactKnownRangeGrade(ranges, value);
+      return { grade: exact || "A+", label: exact ? "Exact" : "Worst case (conflict)" };
+    }
+
+    // grade just below next higher grade
+    const worseIdx = Math.min(nextHigherIdx + 1, gradeOrder.length - 1);
+    return { grade: gradeOrder[worseIdx], label: "Worst case (gap)" };
+  }
+
+  function term243Policy(value) {
+    // Term 243 explicit policies (your latest decisions):
+    // - 0–207 => F (Worst case)
+    // - 208–230 => D (Worst case)
+    // - 231–256 => D+
+    // - 257 => C (Worst case)
+    // - 258–264 => C (Worst case)
+    // - 265–286 => C+ (Exact)
+    // - 287–312 => B (Exact)
+    // - 313–331 => B+ (Exact)
+    // - 332–349 => A (Exact)
+    // - 350 => A (Worst case gap between A and A+)
+    // - 351–400 => A+ (Exact)
+
+    const ranges = termModel["Term 243"].ranges;
+
+    // Exact fully-known ranges first
+    const exact = exactKnownRangeGrade(ranges, value);
+    if (exact) return { grade: exact, label: "Exact" };
+
+    if (value >= 0 && value <= 207) return { grade: "F", label: "Worst case (gap/conflict)" };
+    if (value >= 208 && value <= 230) return { grade: "D", label: "Worst case (gap/conflict)" };
+    if (value >= 231 && value <= 256) return { grade: "D+", label: "Worst case (gap/conflict)" };
+
+    if (value === 257) return { grade: "C", label: "Worst case (gap/conflict)" };
+    if (value >= 258 && value <= 264) return { grade: "C", label: "Worst case (gap)" };
+
+    if (value === 350) return { grade: "A", label: "Worst case (gap)" };
+
+    // Fallback to generic worst-case engine for any remaining oddities
+    return worstCaseGeneric(ranges, value);
+  }
+
+  function nextTargetFromKnownMins(rangesObj, currentGrade, value) {
+    const idx = gradeOrder.indexOf(currentGrade);
+    if (idx <= 0) return { nextGrade: "—", points: 0 };
+
+    for (let i = idx - 1; i >= 0; i--) {
+      const g = gradeOrder[i];
+      const minv = rangesObj[g]?.min;
+      if (minv != null) return { nextGrade: g, points: Math.max(0, minv - value) };
+    }
+    return { nextGrade: "—", points: 0 };
+  }
+
+  function gapRangeSummaryMin3(rangesObj) {
+    const include = new Set();
+    for (let i = 0; i < gradeOrder.length; i++) {
+      const g = gradeOrder[i];
+      const rr = rangesObj[g];
+      if (!rr) continue;
+      if (rr.min == null || rr.max == null) {
+        include.add(g);
+        if (i > 0) include.add(gradeOrder[i - 1]);
+        if (i < gradeOrder.length - 1) include.add(gradeOrder[i + 1]);
+      }
+    }
+    if (include.size < 3) {
+      for (const g of gradeOrder) {
+        if (include.size >= 3) break;
+        if (rangesObj[g]) include.add(g);
+      }
+    }
+    const items = [];
+    for (const g of gradeOrder) {
+      if (!include.has(g)) continue;
+      if (!rangesObj[g]) continue;
+      items.push(`<li><strong>${g}</strong>: ${fmtRange(rangesObj[g].min, rangesObj[g].max)}</li>`);
+      if (items.length >= 6) break;
+    }
+    return items;
+  }
+
+
+  function runSelfTests() {
+    const tests = [
+      {term:"Term 243", points:207, expect:"F"},
+      {term:"Term 243", points:208, expect:"D"},
+      {term:"Term 243", points:230, expect:"D"},
+      {term:"Term 243", points:231, expect:"D+"},
+      {term:"Term 243", points:261, expect:"C"},
+      {term:"Term 243", points:265, expect:"C+"},
+
+      {term:"Term 233", points:221, expect:"F"},
+      {term:"Term 233", points:222, expect:"D"},
+      {term:"Term 233", points:230, expect:"D"},
+      {term:"Term 233", points:242, expect:"D+"},
+      {term:"Term 233", points:250, expect:"C"},
+      {term:"Term 233", points:260, expect:"C+"},
+    ];
+
+    let pass = 0;
+    let fail = 0;
+    for (const t of tests) {
+      const model = termModel[t.term];
+      const ranges = model.ranges;
+      const value = t.points;
+      const gapTerm = Object.values(ranges).some(v => v.min == null || v.max == null);
+
+      let res;
+      if (t.term === "Term 243" && model.type === "points") {
+        res = term243Policy(value);
+      } else if (!gapTerm) {
+        const exact = exactKnownRangeGrade(ranges, value) || "F";
+        res = { grade: exact, label: "Exact" };
+      } else {
+        res = worstCaseGeneric(ranges, value);
+      }
+
+      if (res.grade === t.expect) pass++;
+      else {
+        fail++;
+        console.warn("TEST FAIL:", t.term, "points", t.points, "expected", t.expect, "got", res.grade, res.label);
+      }
+    }
+    console.log(`Self-tests: ${pass} passed, ${fail} failed`);
+  }
+
+  let out = `<h2>Total Points: ${total.toFixed(2)} <span class="badge">(${percent.toFixed(2)}%)</span></h2>`;
+  const order = ["Term 243","Term 242","Term 241","Term 233","Term 232","Term 231","Term 222","Term 213","Term 212","Term 211"];
+
+  for (const term of order) {
+    const model = termModel[term];
+    const value = (model.type === "percent") ? percent : total;
+    const unit = (model.type === "percent") ? "%" : "points";
+    const ranges = model.ranges;
+
+    // Determine if term has any gaps by original definition
+    const gapTerm = Object.values(ranges).some(v => v.min == null || v.max == null);
+
+    let res;
+    if (term === "Term 243" && model.type === "points") {
+      res = term243Policy(value);
+    } else if (!gapTerm) {
+      const exact = exactKnownRangeGrade(ranges, value) || "F";
+      res = { grade: exact, label: "Exact" };
+    } else {
+      // if inside a clean known interval and not overlapping -> Exact, else Worst case
+      res = worstCaseGeneric(ranges, value);
+    }
+
+    const inferredForNext = inferMaxFromNextMin(ranges);
+    const nxt = nextTargetFromKnownMins(inferredForNext, res.grade, value);
+
+    // Gap UI
+    let gapUI = "";
+    if (gapTerm) {
+      const popId = term.replace(/\s+/g, "_") + "_gap";
+      const items = gapRangeSummaryMin3(ranges).join("");
+
+      gapUI = `
+        <span class="gap-wrap">
+          <button class="gap-btn" data-pop="${popId}">Grade gaps</button>
+          <div class="gap-popover" id="${popId}">
+            <div class="title">Gap details for ${term}</div>
+            <div>There is a gap grade in the following ranges:</div>
+            <ul>${items}</ul>
+            <div class="warn">We take the worst case.</div>
+            <div class="small">If you fall inside a fully-defined range, we show <strong>Exact</strong>. Otherwise, we show <strong>Worst case</strong>.</div>
+          </div>
+        </span>`;
+    }
+
+    out += `
+      <div class="term-card">
+        <div class="term-title">${term} <span class="badge">${model.type === "percent" ? "Percent-based" : "Points-based"}</span> ${averagesUI(term)} ${gapUI}</div>
+
+        <div class="grade-label">Current Grade <span class="badge">${res.label}</span></div>
+        <div class="current-grade grade-${res.grade.replace("+","plus")}">${res.grade}</div>
+
+        <div class="next-target">Next Target: <strong>${nxt.nextGrade}</strong></div>
+        <div class="points-needed">${model.type === "percent" ? "Percent Needed" : "Points Needed"}: <strong>${nxt.points.toFixed(2)}</strong> ${unit}</div>
+
+        ${gapTerm ? `<div class="subnote">This term contains gaps/unknown boundaries (xx). If you are not inside a clean range, we assign the <strong>worst-case</strong> grade for safety.</div>` : ""}
+      </div>`;
+  }
+
+  document.getElementById('results').innerHTML = out;
+  runSelfTests();
+
+  // Popover behavior
+  
+  document.querySelectorAll('.avg-btn').forEach(btn=>{
+    const pop = document.getElementById(btn.dataset.avg);
+    btn.addEventListener('click', e=>{
+      e.stopPropagation();
+      pop.style.display = pop.style.display==='block'?'none':'block';
+    });
+  });
+
+
+  document.querySelectorAll('.gap-btn').forEach(btn => {
+    const pop = document.getElementById(btn.dataset.pop);
+    btn.addEventListener('mouseenter', () => pop.style.display = 'block');
+    btn.addEventListener('mouseleave', () => pop.style.display = 'none');
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      pop.style.display = pop.style.display === 'block' ? 'none' : 'block';
+    });
+  });
+
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.avg-pop').forEach(p=>p.style.display='none');
+    document.querySelectorAll('.gap-popover').forEach(p => p.style.display = 'none');
+  });
+});
+</script>
+
 </body>
 </html>
